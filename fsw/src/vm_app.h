@@ -36,7 +36,6 @@
 
 #include "vm_Arming.h"
 #include "vm_Navigation.h"
-#include "prm_lib.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -66,7 +65,6 @@ extern "C" {
 #include "math/Dcm.hpp"
 #include "math/Matrix3F3.hpp"
 #include "math/Vector3F.hpp"
-#include "CautionWarningHelper.hpp"
 
 
 /************************************************************************
@@ -113,7 +111,7 @@ extern "C" {
 /**
  **  \brief VM Application Class
  */
-class VM : ParamsConsumer
+class VM
 {
 public:
     /**\brief Default constructor. */
@@ -139,14 +137,8 @@ public:
     CFE_TBL_Handle_t ConfigTblHdl;
     /** \brief Config Table Pointer */
     VM_ConfigTbl_t* ConfigTblPtr;
-    /** \brief Caution and Warning helper class */
-    CautionWarningHelper m_caws;
 
     /** \brief Input Data subscribed at the beginning of cycle */
-    /** \brief Magnetometer message */
-    PX4_SensorMagMsg_t SensorMagMsg;
-    /** \brief Gyro message */
-    PX4_SensorGyroMsg_t SensorGyroMsg;
     /** \brief Battery status message */
     PX4_BatteryStatusMsg_t BatteryStatusMsg;
     /** \brief Telemetry status message */
@@ -165,8 +157,6 @@ public:
     PX4_ManualControlSetpointMsg_t ManualControlSetpointMsg;
     /** \brief position setpoint triplet message */
     PX4_PositionSetpointTripletMsg_t PositionSetpointTripletMsg;
-    /** \brief Sensor accelerometer message */
-    PX4_SensorAccelMsg_t SensorAccelMsg;
     /** \brief Safety message */
     PX4_SafetyMsg_t SafetyMsg;
     /** \brief Sensor correction message */
@@ -704,56 +694,6 @@ private:
      **
      *************************************************************************/
     void ReportConfiguration(void);
-
-    /************************************************************************/
-    /** \brief Process the parameter pipe.
-     **
-     **  \par Description
-     **       This function will process all incoming named parameter
-     **       commands.
-     **
-     **  \par Assumptions, External Events, and Notes:
-     **       None
-     **
-     **  \returns
-     **   None
-     **  \endreturns
-     **
-     *************************************************************************/
-    void ProcessParamPipe(void);
-
-    /************************************************************************/
-    /** \brief Process parameter updates.
-     **
-     **  \par Description
-     **       This function is called to update named parameters.
-     **
-     **  \par Assumptions, External Events, and Notes:
-     **       None
-     **
-     **  \returns
-     **   CFE_SUCCESS if successful.  -1 if unsuccessful.
-     **  \endreturns
-     **
-     *************************************************************************/
-    int32 ProcessUpdatedParam(PRMLIB_UpdatedParamMsg_t* MsgPtr);
-
-    /************************************************************************/
-    /** \brief Respond to changes in parameters
-     **
-     **  \par Description
-     **       This function is called by the #ParamsConsumer base class
-     **       when a registered named parameter has changed.
-     **
-     **  \par Assumptions, External Events, and Notes:
-     **       None
-     **
-     **  \returns
-     **   CFE_SUCCESS if successful.  -1 if unsuccessful.
-     **  \endreturns
-     **
-     *************************************************************************/
-    virtual void onParamsChange(PRMLIB_ParamRegistration_t *ParamsData, uint32 ParamsCount);
 
 public:
     /************************************************************************/

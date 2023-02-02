@@ -47,7 +47,8 @@ typedef enum
     VM_NAVSM_STAB         = 6,
     VM_NAVSM_RATTITUDE    = 7,
     VM_NAVSM_AUTO_TAKEOFF = 8,
-    VM_NAVSM_AUTO_LAND    = 9
+    VM_NAVSM_AUTO_LAND    = 9,
+    VM_NAVSM_AUTO_MISSION = 10
 } VM_NavSM_StateType;
 
 
@@ -102,7 +103,6 @@ void VM_Navigation::EnteredManual()
     App.VehicleStatusMsg.NavState = PX4_NavigationState_t::PX4_NAVIGATION_STATE_MANUAL;
 
     CFE_EVS_SendEvent(VM_NAVSM_ENTERED_MANUAL_INFO_EID, CFE_EVS_INFORMATION, "Navigation::Manual");
-    App.SendVehicleStatusMsg();
 }
 
 
@@ -118,7 +118,6 @@ void VM_Navigation::EnteredAltitudeControl()
     App.VehicleStatusMsg.NavState = PX4_NavigationState_t::PX4_NAVIGATION_STATE_ALTCTL;
 
     CFE_EVS_SendEvent(VM_NAVSN_ENTERED_ALTCTL_INFO_EID, CFE_EVS_INFORMATION, "Navigation::AltitudeControl");
-    App.SendVehicleStatusMsg();
 }
 
 
@@ -135,9 +134,23 @@ void VM_Navigation::EnteredPositionControl()
 
     CFE_EVS_SendEvent(VM_NAVSN_ENTERED_POSCTL_INFO_EID, CFE_EVS_INFORMATION,
             "Navigation::PositionControl");
-    App.SendVehicleStatusMsg();
 }
 
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/*                                                                 */
+/*  EnteredAutoMission Function                                    */
+/*                                                                 */
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+void VM_Navigation::EnteredAutoMission()
+{
+    App.VehicleManagerStateMsg.MainState = PX4_COMMANDER_MAIN_STATE_AUTO_MISSION;
+    App.VehicleStatusMsg.NavState = PX4_NavigationState_t::PX4_NAVIGATION_STATE_AUTO_MISSION;
+
+    CFE_EVS_SendEvent(VM_NAVSN_ENTERED_AUTO_MISSION_INFO_EID, CFE_EVS_INFORMATION,
+            "Navigation::AutoMission");
+}
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -152,7 +165,6 @@ void VM_Navigation::EnteredAutoLoiter()
 
     CFE_EVS_SendEvent(VM_NAVSN_ENTERED_AUTOLOITER_INFO_EID, CFE_EVS_INFORMATION,
             "Navigation::AutoLoiter");
-    App.SendVehicleStatusMsg();
 }
 
 
@@ -169,7 +181,6 @@ void VM_Navigation::EnteredAutoReturnToLaunch()
 
     CFE_EVS_SendEvent(VM_NAVSN_ENTERED_RTL_INFO_EID, CFE_EVS_INFORMATION,
         "Navigation::AutoRTL");
-    App.SendVehicleStatusMsg();
 }
 
 
@@ -186,7 +197,6 @@ void VM_Navigation::EnteredAcrobatic()
 
     CFE_EVS_SendEvent(VM_NAVSN_ENTERED_ACRO_INFO_EID, CFE_EVS_INFORMATION,
         "Navigation::Acrobatic");
-    App.SendVehicleStatusMsg();
 }
 
 
@@ -203,7 +213,6 @@ void VM_Navigation::EnteredStabilize()
 
     CFE_EVS_SendEvent(VM_NAVSN_ENTERED_STABILIZE_INFO_EID, CFE_EVS_INFORMATION,
         "Navigation::Stabilize");
-    App.SendVehicleStatusMsg();
 }
 
 
@@ -220,7 +229,6 @@ void VM_Navigation::EnteredRattitude()
 
     CFE_EVS_SendEvent(VM_NAVSN_ENTERED_RATTITUDE_INFO_EID, CFE_EVS_INFORMATION,
         "Navigation::Rattitude");
-    App.SendVehicleStatusMsg();
 }
 
 
@@ -237,7 +245,6 @@ void VM_Navigation::EnteredAutoTakeoff()
 
     CFE_EVS_SendEvent(VM_NAVSN_ENTERED_AUTO_TAKEOFF_INFO_EID, CFE_EVS_INFORMATION,
         "Navigation::AutoTakeoff");
-    App.SendVehicleStatusMsg();
 }
 
 
@@ -254,7 +261,6 @@ void VM_Navigation::EnteredAutoLand()
 
     CFE_EVS_SendEvent(VM_NAVSN_ENTERED_AUTO_LAND_INFO_EID, CFE_EVS_INFORMATION,
         "Navigation::AutoLand");
-    App.SendVehicleStatusMsg();
 }
 
 
@@ -287,6 +293,7 @@ void VM_Navigation::DoAction()
             App.VehicleControlModeMsg.ControlVelocityEnabled = false;
             App.VehicleControlModeMsg.ControlAccelerationEnabled = false;
             App.VehicleControlModeMsg.ControlTerminationEnabled = false;
+            App.VehicleControlModeMsg.ControlAutoMissionEnabled = false;
             break;
         }
 
@@ -303,6 +310,7 @@ void VM_Navigation::DoAction()
             App.VehicleControlModeMsg.ControlVelocityEnabled = false;
             App.VehicleControlModeMsg.ControlAccelerationEnabled = false;
             App.VehicleControlModeMsg.ControlTerminationEnabled = false;
+            App.VehicleControlModeMsg.ControlAutoMissionEnabled = false;
             break;
         }
 
@@ -319,8 +327,30 @@ void VM_Navigation::DoAction()
             App.VehicleControlModeMsg.ControlVelocityEnabled = !App.VehicleStatusMsg.InTransitionMode;
             App.VehicleControlModeMsg.ControlAccelerationEnabled = false;
             App.VehicleControlModeMsg.ControlTerminationEnabled = false;
+            App.VehicleControlModeMsg.ControlAutoMissionEnabled = false;
+            //printf("--------------------------------- POSCTL -------------------------------\n");
             break;
         }
+
+        case VM_NavSM_StateType::VM_NAVSM_AUTO_MISSION:
+        {
+            App.VehicleControlModeMsg.ControlManualEnabled = true;
+            App.VehicleControlModeMsg.ControlAutoEnabled = true;
+            App.VehicleControlModeMsg.ControlRatesEnabled = true;
+            App.VehicleControlModeMsg.ControlAttitudeEnabled = true;
+            App.VehicleControlModeMsg.ControlRattitudeEnabled = false;
+            App.VehicleControlModeMsg.ControlAltitudeEnabled = true;
+            App.VehicleControlModeMsg.ControlClimbRateEnabled = true;
+            App.VehicleControlModeMsg.ControlPositionEnabled = !App.VehicleStatusMsg.InTransitionMode;
+            App.VehicleControlModeMsg.ControlVelocityEnabled = !App.VehicleStatusMsg.InTransitionMode;
+            App.VehicleControlModeMsg.ControlAccelerationEnabled = false;
+            App.VehicleControlModeMsg.ControlTerminationEnabled = false;
+            App.VehicleControlModeMsg.ControlAutoMissionEnabled = true;
+            
+            // printf("--------------------------------- Auto Mission -------------------------------\n");
+            break;
+        }
+
 
         /* Fall through */
         case VM_NavSM_StateType::VM_NAVSM_AUTO_RTL:
@@ -339,6 +369,7 @@ void VM_Navigation::DoAction()
             App.VehicleControlModeMsg.ControlVelocityEnabled = !App.VehicleStatusMsg.InTransitionMode;
             App.VehicleControlModeMsg.ControlAccelerationEnabled = false;
             App.VehicleControlModeMsg.ControlTerminationEnabled = false;
+            App.VehicleControlModeMsg.ControlAutoMissionEnabled = false;
             break;
         }
 
@@ -355,6 +386,7 @@ void VM_Navigation::DoAction()
             App.VehicleControlModeMsg.ControlVelocityEnabled = false;
             App.VehicleControlModeMsg.ControlAccelerationEnabled = false;
             App.VehicleControlModeMsg.ControlTerminationEnabled = false;
+            App.VehicleControlModeMsg.ControlAutoMissionEnabled = false;
             break;
         }
 
@@ -372,6 +404,7 @@ void VM_Navigation::DoAction()
             App.VehicleControlModeMsg.ControlAccelerationEnabled = false;
             App.VehicleControlModeMsg.ControlTerminationEnabled = false;
             App.VehicleControlModeMsg.ExternalManualOverrideOk = false;
+            App.VehicleControlModeMsg.ControlAutoMissionEnabled = false;
             break;
         }
 
@@ -388,6 +421,7 @@ void VM_Navigation::DoAction()
             App.VehicleControlModeMsg.ControlVelocityEnabled = false;
             App.VehicleControlModeMsg.ControlAccelerationEnabled = false;
             App.VehicleControlModeMsg.ControlTerminationEnabled = false;
+            App.VehicleControlModeMsg.ControlAutoMissionEnabled = false;
             break;
         }
 
@@ -413,19 +447,20 @@ osalbool VM_Navigation::AllMessagesReceivedAtLeastOnce()
 {
     osalbool validity = false;
 
-    osalbool SensorMagMsgReady = (App.SensorMagMsg.Timestamp > 0);
-    osalbool SensorGyroMsgReady = (App.SensorGyroMsg.Timestamp > 0);
-    osalbool SensorAccelMsgReady = (App.SensorAccelMsg.Timestamp > 0);
+    osalbool SensorMagMsgReady = (App.SensorCombinedMsg.MagTimestamp > 0);
+    /* SensorCombined timestamp is Gyro timestamp. */
+    osalbool SensorGyroMsgReady = (App.SensorCombinedMsg.Timestamp > 0);
+    osalbool SensorAccelMsgReady = (App.SensorCombinedMsg.AccTimestamp > 0);
     osalbool SensorCombinedMsgReady = (App.SensorCombinedMsg.Timestamp > 0);
     osalbool VehicleAttitudeMsgReady = (App.VehicleAttitudeMsg.Timestamp > 0);
-    osalbool VehicleLocalPositionMsg = (App.VehicleLocalPositionMsg.Timestamp > 0);
+    osalbool VehicleLocalPositionMsgReady = (App.VehicleLocalPositionMsg.Timestamp > 0);
     osalbool VehicleLandDetectedMsgReady = (App.VehicleLandDetectedMsg.Timestamp > 0);
     osalbool VehicleGlobalPositionMsgReady = (App.VehicleGlobalPositionMsg.Timestamp > 0);
     osalbool VehicleGpsPositionMsgReady = (App.VehicleGpsPositionMsg.Timestamp > 0);
 
     if (SensorMagMsgReady && SensorGyroMsgReady && SensorAccelMsgReady
         && SensorCombinedMsgReady && VehicleAttitudeMsgReady
-        && VehicleLocalPositionMsg && VehicleLandDetectedMsgReady
+        && VehicleLocalPositionMsgReady && VehicleLandDetectedMsgReady
         && VehicleGlobalPositionMsgReady && VehicleGpsPositionMsgReady)
     {
         validity = true;
@@ -435,7 +470,16 @@ osalbool VM_Navigation::AllMessagesReceivedAtLeastOnce()
     {
         /* Send event */
         CFE_EVS_SendEvent(VM_SEN_NOT_READY_INFO_EID, CFE_EVS_INFORMATION,
-            "Sensors not ready");
+            "Sensors not ready (SM=%u SG=%u SA=%u SC=%u VA=%u VLP=%u VLD=%u VGP=%u VGPSP=%u)\n",
+			SensorMagMsgReady,
+			SensorGyroMsgReady,
+			SensorAccelMsgReady,
+			SensorCombinedMsgReady,
+			VehicleAttitudeMsgReady,
+			VehicleLocalPositionMsgReady,
+			VehicleLandDetectedMsgReady,
+			VehicleGlobalPositionMsgReady,
+			VehicleGpsPositionMsgReady);
     }
 
     return validity;
@@ -450,8 +494,13 @@ osalbool VM_Navigation::AllMessagesReceivedAtLeastOnce()
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 osalbool VM_Navigation::IsStabilizationRequired(void)
 {
+//	return (status.is_rotary_wing ||		// is a rotary wing, or
+//		status.vtol_fw_permanent_stab || 	// is a VTOL in fixed wing mode and stabilisation is on, or
+//		(vtol_status.vtol_in_trans_mode && 	// is currently a VTOL transitioning AND
+//			!status.is_rotary_wing));	// is a fixed wing, ie: transitioning back to rotary wing mode
+
     /* Being a rotary wing qualifies for stabilization */
-    return true;
+    return App.VehicleStatusMsg.IsRotaryWing;
 }
 
 
@@ -516,6 +565,35 @@ osalbool VM_Navigation::IsTransitionPosCtlValid(void)
     return validity;
 }
 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/*                                                                 */
+/*  IsTransitionAutoMissionValid Function                               */
+/*                                                                 */
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+osalbool VM_Navigation::IsTransitionAutoMissionValid(void)
+{
+    osalbool validity = false;
+    PX4_NavigationState_t Current_NavState = App.VehicleStatusMsg.NavState;
+
+    /* Position Hold Requirement Validation */
+    if (App.VehicleLocalPositionMsg.Timestamp > 0
+        && App.VehicleLocalPositionMsg.XY_Valid
+        && App.VehicleLocalPositionMsg.V_XY_Valid
+        && App.VehicleLocalPositionMsg.Z_Valid
+        && App.VehicleLocalPositionMsg.V_Z_Valid)
+    {
+        validity = true;
+    }
+
+    if (!validity)
+    {
+        /* Send event */
+        CFE_EVS_SendEvent(VM_REQ_POS_CTL_ERR_EID, CFE_EVS_ERROR,
+                "Auto Mission mode requirement failed");
+    }
+
+    return validity;
+}
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -525,24 +603,29 @@ osalbool VM_Navigation::IsTransitionPosCtlValid(void)
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 osalbool VM_Navigation::IsTransitionAcrobaticValid(void)
 {
-    osalbool validity = false;
+    osalbool validity = true;
     PX4_NavigationState_t Current_NavState = App.VehicleStatusMsg.NavState;
 
     /* Altitude Hold Requirement Validation */
-    if (App.SensorCombinedMsg.Timestamp > 0
-        && (App.SensorCombinedMsg.MagTimestampRelative
-                != PX4_RELATIVE_TIMESTAMP_INVALID)
-        && (App.SensorCombinedMsg.AccRelTimeInvalid
-                != PX4_RELATIVE_TIMESTAMP_INVALID))
+    if(App.SensorCombinedMsg.Timestamp == 0)
     {
-        validity = true;
+        CFE_EVS_SendEvent(VM_REQ_ACRO_ERR_EID, CFE_EVS_ERROR,
+            "Acrobatic mode requirement failed. SensorCombinedMsg not received.");
+        validity = false;
     }
 
-    if (!validity)
+    if(App.SensorCombinedMsg.MagInvalid)
     {
-        /* Send event */
         CFE_EVS_SendEvent(VM_REQ_ACRO_ERR_EID, CFE_EVS_ERROR,
-            "Acrobatic mode requirement failed");
+            "Acrobatic mode requirement failed. Mag invalid.");
+        validity = false;
+    }
+
+    if(App.SensorCombinedMsg.AccInvalid)
+    {
+        CFE_EVS_SendEvent(VM_REQ_ACRO_ERR_EID, CFE_EVS_ERROR,
+            "Acrobatic mode requirement failed. Acc invalid.");
+        validity = false;
     }
 
     return validity;

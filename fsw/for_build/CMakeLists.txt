@@ -1,24 +1,24 @@
-add_custom_command(
-    OUTPUT
-        ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_ArmingContext.cpp ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_ArmingContext.h
-        ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_NavigationContext.cpp ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_NavigationContext.h
-    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/sm_src
-    COMMAND java -jar ${PROJECT_SOURCE_DIR}/tools/smc/bin/Smc.jar -c++ -d ${CMAKE_CURRENT_BINARY_DIR}/sm_src ${CMAKE_CURRENT_SOURCE_DIR}/../src/VM_Arming.sm
-    COMMAND java -jar ${PROJECT_SOURCE_DIR}/tools/smc/bin/Smc.jar -c++ -d ${CMAKE_CURRENT_BINARY_DIR}/sm_src ${CMAKE_CURRENT_SOURCE_DIR}/../src/VM_Navigation.sm
-    COMMAND java -jar ${PROJECT_SOURCE_DIR}/tools/smc/bin/Smc.jar -graph -glevel 0 -d ${CMAKE_CURRENT_BINARY_DIR}/sm_src ${CMAKE_CURRENT_SOURCE_DIR}/../src/VM_Arming.sm
-    COMMAND java -jar ${PROJECT_SOURCE_DIR}/tools/smc/bin/Smc.jar -graph -glevel 0 -d ${CMAKE_CURRENT_BINARY_DIR}/sm_src ${CMAKE_CURRENT_SOURCE_DIR}/../src/VM_Navigation.sm
+#add_custom_command(
+    #OUTPUT
+        #${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_ArmingContext.cpp ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_ArmingContext.h
+        #${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_NavigationContext.cpp ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_NavigationContext.h
+    #COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/sm_src
+    #COMMAND java -jar ${PROJECT_SOURCE_DIR}/tools/smc/bin/Smc.jar -c++ -d ${CMAKE_CURRENT_BINARY_DIR}/sm_src ${CMAKE_CURRENT_SOURCE_DIR}/../src/VM_Arming.sm
+    #COMMAND java -jar ${PROJECT_SOURCE_DIR}/tools/smc/bin/Smc.jar -c++ -d ${CMAKE_CURRENT_BINARY_DIR}/sm_src ${CMAKE_CURRENT_SOURCE_DIR}/../src/VM_Navigation.sm
+    #COMMAND java -jar ${PROJECT_SOURCE_DIR}/tools/smc/bin/Smc.jar -graph -glevel 0 -d ${CMAKE_CURRENT_BINARY_DIR}/sm_src ${CMAKE_CURRENT_SOURCE_DIR}/../src/VM_Arming.sm
+    #COMMAND java -jar ${PROJECT_SOURCE_DIR}/tools/smc/bin/Smc.jar -graph -glevel 0 -d ${CMAKE_CURRENT_BINARY_DIR}/sm_src ${CMAKE_CURRENT_SOURCE_DIR}/../src/VM_Navigation.sm
 
-    BYPRODUCTS
-        ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_ArmingContext.cpp ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_ArmingContext.h
-        ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_MainContext.cpp ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_NavigationContext.h
-    DEPENDS
-        ${CMAKE_CURRENT_SOURCE_DIR}/../src/VM_Arming.sm
-        ${CMAKE_CURRENT_SOURCE_DIR}/../src/VM_Navigation.sm
-)
-add_custom_target(vm-smc-gen ALL
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_ArmingContext.cpp ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_ArmingContext.h
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_NavigationContext.cpp ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_NavigationContext.h
-)
+    #BYPRODUCTS
+        #${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_ArmingContext.cpp ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_ArmingContext.h
+        #${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_MainContext.cpp ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_NavigationContext.h
+    #DEPENDS
+        #${CMAKE_CURRENT_SOURCE_DIR}/../src/VM_Arming.sm
+        #${CMAKE_CURRENT_SOURCE_DIR}/../src/VM_Navigation.sm
+#)
+#add_custom_target(vm-smc-gen ALL
+    #DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_ArmingContext.cpp ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_ArmingContext.h
+    #DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_NavigationContext.cpp ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_NavigationContext.h
+#)
 
 
 
@@ -30,25 +30,22 @@ buildliner_add_app_def(vm
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/vm_config_utils.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/vm_events.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/vm_msg.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/../src/vm_params.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/vm_tbldefs.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/vm_version.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/vm_Arming.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/vm_Arming.h
-        ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_ArmingContext.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_ArmingContext.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/VM_ArmingContext.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/VM_ArmingContext.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/vm_Navigation.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/vm_Navigation.h
-        ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_NavigationContext.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_NavigationContext.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/../src/CautionWarningHelper.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/../src/CautionWarningHelper.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/VM_NavigationContext.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/VM_NavigationContext.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/VM_Arming.sm
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/VM_Navigation.sm
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/vm_symbols.cpp
 
     INCLUDES
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/
-        ${CMAKE_CURRENT_BINARY_DIR}/sm_src/
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/smc/lib/C++
 
     DESIGN_DOCS ${CMAKE_CURRENT_SOURCE_DIR}/detail_doxy.in
@@ -56,16 +53,22 @@ buildliner_add_app_def(vm
     REFERENCE_CONFIG
         ${PROJECT_SOURCE_DIR}/apps/vm/fsw/mission_inc
         ${PROJECT_SOURCE_DIR}/apps/vm/fsw/platform_inc
+        
+    COMMANDER_DISPLAYS 
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../cdr
 )
 
-add_dependencies(vm
-    vm-smc-gen
-)
+#add_dependencies(vm
+    #vm-smc-gen
+#)
 
 buildliner_add_app_unit_test(vm-ut
     UTASSERT
     NO_HELGRIND
     NO_MASSIF
+
+    COVERAGE_EXCLUSIONS
+        ${PROJECT_SOURCE_DIR}/tools/smc/lib/C++
 
     SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/../unit_test/vm_app_test.cpp
@@ -87,14 +90,13 @@ buildliner_add_app_unit_test(vm-ut
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/vm_version.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/vm_Arming.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/vm_Arming.h
-        ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_ArmingContext.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_ArmingContext.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/VM_ArmingContext.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/VM_ArmingContext.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/vm_Navigation.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/vm_Navigation.h
-        ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_NavigationContext.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/sm_src/VM_NavigationContext.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/../src/CautionWarningHelper.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/../src/CautionWarningHelper.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/VM_NavigationContext.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/VM_NavigationContext.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../cfs_lib/fsw/src/cfs_utils.c
         #${PX4LIB_LIB_SOURCES}
         # Adding lib sources individually so stubs can be used.
         # Math
@@ -123,12 +125,11 @@ buildliner_add_app_unit_test(vm-ut
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/
         ${CMAKE_CURRENT_SOURCE_DIR}/../unit_test/
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/smc/lib/C++
-        ${CMAKE_CURRENT_BINARY_DIR}/sm_src/
 
     VALGRIND_SUPPRESSION_FILE
         ${CMAKE_CURRENT_SOURCE_DIR}/../unit_test/valgrind.supp
 )
 
-add_dependencies(vm-ut
-    vm-smc-gen
-)
+#add_dependencies(vm-ut
+    #vm-smc-gen
+#)
